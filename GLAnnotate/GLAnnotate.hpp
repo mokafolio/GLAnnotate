@@ -860,7 +860,7 @@ namespace gla
         {
             NamedAttribute()
             {
-
+                
             }
 
             NamedAttribute(const char * _name, const detail::AttributeValue & _val) :
