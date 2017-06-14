@@ -12,6 +12,11 @@ Baisc Example
 --------
 
 ```
+//init the gla instance
+gla::GLAnnotate gla;
+bool success = gla.init();
+assert(success);
+
 //setup orthi projection
 gla.ortho(0, 800, 600, 0, -1, 1);
 gla.setColor(1.0, 0.5, 0.25);
@@ -23,7 +28,7 @@ gla.rect(50, 50, 100, 100);
 gla.setColor(1.0, 0.0, 0.0);
 gla.line(100, 100, 400, 300);
 
-//easy way to draw a texture (tex is an OpenGL texture handle)
+//easy way to draw a texture (tex is an OpenGL texture handle, not initialized in this snippet)
 gla.setColor(1.0, 1.0, 1.0);
 gla.texture(tex, 400, 200, tw, th);
 
