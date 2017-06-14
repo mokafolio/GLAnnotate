@@ -84,3 +84,27 @@ and then include it like this
 
 Or simply copy the file into your project and include it from there!
 
+Examples
+-------------
+
+The examples depend on *GLFW* to open a window.
+
+To build the examples do the following:
+
+```
+mkdir build
+cd build
+cmake -DBuildExamples=On ..
+make
+```
+
+and open them like this, i.e.:
+
+```
+cd Examples
+./BasicExample
+```
+
+
+
+
