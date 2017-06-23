@@ -770,7 +770,6 @@ namespace gla
             bool bFound = false;
             for (std::size_t idx = 0; idx < m_activeAttributeCount; ++idx)
             {
-                std::printf("%lu\n", idx);
                 if (std::strcmp(m_activeAttributes[idx].name, _name) == 0)
                 {
                     m_activeAttributes[idx].value = _val;
