@@ -87,6 +87,7 @@ exit(EXIT_FAILURE); \
 #include <cstring>
 #include <cstdio>
 #include <cmath>
+#include <cassert>
 #include <algorithm>
 
 namespace gla
