@@ -94,6 +94,22 @@ int main(int _argc, const char * _args[])
                 gla.vertex(50, 200, 0);
                 gla.end();
 
+                //draw a four stop gradient
+                gla.begin(GL_TRIANGLE_STRIP);
+                gla.setColor(1.0, 1.0, 1.0);
+                gla.vertex(700, 200, 0);
+                gla.vertex(730, 200, 0);
+                gla.setColor(1.0, 0.0, 0.0);
+                gla.vertex(700, 250, 0);
+                gla.vertex(730, 250, 0);
+                gla.setColor(1.0, 1.0, 0.0);
+                gla.vertex(700, 300, 0);
+                gla.vertex(730, 300, 0);
+                gla.setColor(0.0, 0.0, 1.0);
+                gla.vertex(700, 350, 0);
+                gla.vertex(730, 350, 0);
+                gla.end();
+
                 glfwSwapBuffers(window);
                 glfwPollEvents();
             }
