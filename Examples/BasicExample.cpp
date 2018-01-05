@@ -109,7 +109,7 @@ int main(int _argc, const char * _args[])
                 gla.vertex(700, 350, 0);
                 gla.vertex(730, 350, 0);
                 gla.end();
-
+                
                 glfwSwapBuffers(window);
                 glfwPollEvents();
             }

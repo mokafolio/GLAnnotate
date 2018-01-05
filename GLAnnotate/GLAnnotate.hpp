@@ -99,10 +99,45 @@ namespace gla
     namespace detail
     {
         //only for internal use to implement a simple matrix stack
+        //these are by no means feature complete and literally only
+        //implement what is needed right now
+        struct Vector3
+        {
+            Float x, y, z;
+        };
+
         struct Vector4
         {
             Float x, y, z, w;
         };
+
+        inline Vector3 operator - (const Vector3 & _a, const Vector3 & _b)
+        {
+            return {_a.x - _b.x, _a.y - _b.y, _a.z - _b.z};
+        }
+
+        inline Float length(const Vector3 & _vec)
+        {
+            return std::sqrt(_vec.x * _vec.x + _vec.y * _vec.y + _vec.z * _vec.z);
+        }
+
+        inline Vector3 normalize(const Vector3 & _vec)
+        {
+            Float invLen = 1.0 / length(_vec);
+            return {_vec.x * invLen, _vec.y * invLen, _vec.z * invLen};
+        }
+
+        inline Vector3 cross(const Vector3 & _a, const Vector3 & _b)
+        {
+            return {_a.y * _b.z - _a.z * _b.y,
+                    _a.z * _b.x - _a.x * _b.z,
+                    _a.x * _b.y - _a.y * _b.x};
+        }
+
+        inline Float dot(const Vector3 & _a, const Vector3 & _b)
+        {
+            return _a.x * _b.x + _a.y * _b.y + _a.z * _b.z;
+        }
 
         struct Matrix4
         {
@@ -214,6 +249,54 @@ namespace gla
                 {0.0, b, 0.0, 0.0},
                 {0.0, 0.0, c, 0.0},
                 {tx, ty, tz, 1.0});
+            }
+
+            inline static Matrix4 frustum(Float _left, Float _right, Float _bottom, Float _top, Float _near, Float _far)
+            {
+                Float a = 2.0 * _near / (_right - _left);
+                Float b = 2.0 * _near / (_top - _bottom);
+                Float c = _right + _left / (_right - _left);
+                Float d = _top + _bottom / (_top - _bottom);
+                Float e = -_far + _near / (_far - _near);
+                Float f = -2.0 * _far * _near / (_far - _near);
+
+                return Matrix4(
+                {a, 0.0, 0.0, 0.0},
+                {0.0, b, 0.0, 0.0},
+                {c, d, e, -1.0},
+                {0.0, 0.0, f, 0.0});
+            }
+
+            struct FrustumPlanes
+            {
+                Float v[6];
+            };
+
+            inline static FrustumPlanes frustumPlanesFromPerspective(Float _fovy, Float _aspect, Float _near, Float _far)
+            {
+                Float tanFovy = tan((_fovy * 0.5) * 0.017453293); //0.017453293 to conert to rads
+                Float height = tanFovy * _near;
+                Float width = height * _aspect;
+                return { -width, width, -height, height, _near, _far};
+            }
+
+            inline static Matrix4 perspective(Float _fovy, Float _aspect, Float _near, Float _far)
+            {
+                auto fr = frustumPlanesFromPerspective(_fovy, _aspect, _near, _far);
+                return frustum(fr.v[0], fr.v[1], fr.v[2], fr.v[3], fr.v[4], fr.v[5]);
+            }
+
+            inline static Matrix4 lookAt(const Vector3 & _eye, const Vector3 & _center, const Vector3 & _up)
+            {
+                Vector3 f = normalize(_center - _eye);
+                Vector3 s = normalize(cross(f, _up));
+                Vector3 u = cross(s, f);
+
+                return Matrix4(
+                {s.x, u.x, -f.x, 0.0},
+                {s.y, u.y, -f.y, 0.0},
+                {s.z, u.z, -f.z, 0.0},
+                { -dot(s, _eye), -dot(u, _eye), dot(f, _eye), 1.0});
             }
 
             Vector4 col0, col1, col2, col3;
@@ -588,6 +671,23 @@ namespace gla
             setProjection(detail::Matrix4::ortho(_left, _right, _bottom, _top, _near, _far));
         }
 
+        inline void frustum(Float _left, Float _right, Float _bottom, Float _top, Float _near, Float _far)
+        {
+            setProjection(detail::Matrix4::frustum(_left, _right, _bottom, _top, _near, _far));
+        }
+
+        inline void perspective(Float _fovy, Float _aspect, Float _near, Float _far)
+        {
+            setProjection(detail::Matrix4::perspective(_fovy, _aspect, _near, _far));
+        }
+
+        inline void lookAt(Float _eyeX, Float _eyeY, Float _eyeZ,
+                           Float _centerX, Float _centerY, Float _centerZ,
+                           Float _upX, Float _upY, Float _upZ)
+        {
+            setTransform(detail::Matrix4::lookAt({_eyeX, _eyeY, _eyeZ}, {_centerX, _centerY, _centerZ}, {_upX, _upY, _upZ}));
+        }
+
         inline void pushTransform()
         {
             m_transformStack.push(m_transform);
@@ -860,7 +960,7 @@ namespace gla
         {
             NamedAttribute()
             {
-                
+
             }
 
             NamedAttribute(const char * _name, const detail::AttributeValue & _val) :
