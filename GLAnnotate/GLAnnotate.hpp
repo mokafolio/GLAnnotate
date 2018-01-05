@@ -253,18 +253,18 @@ namespace gla
 
             inline static Matrix4 frustum(Float _left, Float _right, Float _bottom, Float _top, Float _near, Float _far)
             {
-                Float a = 2.0 * _near / (_right - _left);
-                Float b = 2.0 * _near / (_top - _bottom);
-                Float c = _right + _left / (_right - _left);
-                Float d = _top + _bottom / (_top - _bottom);
-                Float e = -_far + _near / (_far - _near);
-                Float f = -2.0 * _far * _near / (_far - _near);
+                Float a = (2.0 * _near) / (_right - _left);
+                Float b = (2.0 * _near) / (_top - _bottom);
+                Float c = (_right + _left) / (_right - _left);
+                Float d = (_top + _bottom) / (_top - _bottom);
+                Float e = (-_far + _near) / (_far - _near);
+                Float f = (-2.0 * _far * _near) / (_far - _near);
 
                 return Matrix4(
-                {a, 0.0, 0.0, 0.0},
-                {0.0, b, 0.0, 0.0},
-                {c, d, e, -1.0},
-                {0.0, 0.0, f, 0.0});
+                {a,   0.0, 0.0, 0.0},
+                {0.0, b,   0.0, 0.0},
+                {c,   d,   e,   -1.0},
+                {0.0, 0.0, f,   0.0});
             }
 
             struct FrustumPlanes
@@ -274,7 +274,7 @@ namespace gla
 
             inline static FrustumPlanes frustumPlanesFromPerspective(Float _fovy, Float _aspect, Float _near, Float _far)
             {
-                Float tanFovy = tan((_fovy * 0.5) * 0.017453293); //0.017453293 to conert to rads
+                Float tanFovy = std::tan((_fovy * 0.5) * 0.017453293); //0.017453293 to convert to rads
                 Float height = tanFovy * _near;
                 Float width = height * _aspect;
                 return { -width, width, -height, height, _near, _far};
