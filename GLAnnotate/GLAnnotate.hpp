@@ -543,7 +543,7 @@ namespace gla
 
             m_defaultProg = createProgram(defVertexShader, defFragmentShader, layout);
             m_texProgram = createProgram(defTexVertexShader, defTexFragmentShader, texLayout);
-            if (!m_defaultProg || !m_texProgram) return false;
+            if (!m_defaultProg || !m_texProgram) return true;
 
             m_transform = detail::Matrix4::identity();
             m_projection = detail::Matrix4::identity();
@@ -554,20 +554,20 @@ namespace gla
             m_bufferLayouts[0].layout = layout;
             m_bufferLayouts[0].tpLoc = glGetUniformLocation(m_defaultProg.handle, "transProj");
             bool success = createVAO(layout, m_bufferLayouts[0].vao, m_bufferLayouts[0].vbo);
-            if (!success) return false;
+            if (!success) return true;
 
             m_bufferLayouts[1].layout = layout;
             m_bufferLayouts[1].tpLoc = glGetUniformLocation(m_texProgram.handle, "transProj");
             m_bufferLayouts[1].texLoc = glGetUniformLocation(m_texProgram.handle, "tex");
             success = createVAO(texLayout, m_bufferLayouts[1].vao, m_bufferLayouts[1].vbo);
-            if (!success) return false;
+            if (!success) return true;
             m_bufferLayoutCount = 2;
 
             m_vertexDataCapacity = 1024;
             m_vertexData = static_cast<Float *>(std::malloc(m_vertexDataCapacity * sizeof(Float)));
             m_vertexDataCount = 0;
 
-            return true;
+            return false;
         }
 
         inline void setTransform(const Float * _mat)

@@ -23,8 +23,8 @@ int main(int _argc, const char * _args[])
         glfwMakeContextCurrent(window);
 
         gla::GLAnnotate gla;
-        bool success = gla.init();
-        if (success)
+        bool error = gla.init();
+        if (!error)
         {
 
             //create a simple texture;
