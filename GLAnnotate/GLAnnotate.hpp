@@ -3,6 +3,7 @@
 
 //POSSIBLE PLATFORMS
 //@TODO: Add IOS & Android
+//@TODO: Allow to overwrite/disable the opengl header inclusion
 #define GLANNOTATE_PLATFORM_OSX 1
 #define GLANNOTATE_PLATFORM_LINUX 2
 
@@ -80,7 +81,7 @@ exit(EXIT_FAILURE); \
 #define GLANNOTATE_MAX_NAME_LENGTH 128
 #define GLANNOTATE_MAX_BUFFERELEMENT_COUNT 16
 #define GLANNOTATE_MAX_BUFFERLAYOUT_COUNT 16
-#define GLANNOTATE_MAX_VERTEXDATA_COUNT 64000
+#define GLANNOTATE_MAX_VERTEXDATA_COUNT 256000
 #define GLANNOTATE_MAX_ACTIVE_ATTRIBUTES 16
 
 #include <cstdlib>
@@ -462,8 +463,20 @@ namespace gla
 
         inline ~GLAnnotate()
         {
+            //@TODO: Double check if I missed any cleanup
             if (m_vertexData)
+            {
                 std::free(m_vertexData);
+
+                destroyProgram(m_defaultProg);
+                destroyProgram(m_texProgram);
+
+                for (auto & layout : m_bufferLayouts)
+                {
+                    glDeleteBuffers(1, &layout.vbo);
+                    glDeleteVertexArrays(1, &layout.vao);
+                }
+            }
         }
 
         inline bool init()
@@ -550,7 +563,8 @@ namespace gla
             if (!success) return false;
             m_bufferLayoutCount = 2;
 
-            m_vertexData = static_cast<Float *>(std::malloc(GLANNOTATE_MAX_VERTEXDATA_COUNT * sizeof(Float)));
+            m_vertexDataCapacity = 1024;
+            m_vertexData = static_cast<Float *>(std::malloc(m_vertexDataCapacity * sizeof(Float)));
             m_vertexDataCount = 0;
 
             return true;
@@ -727,14 +741,11 @@ namespace gla
 
         inline void vertex(Float _x, Float _y, Float _z)
         {
-            m_vertexData[m_vertexDataCount++] = _x;
-            m_vertexData[m_vertexDataCount++] = _y;
-            m_vertexData[m_vertexDataCount++] = _z;
+            addVertexData((detail::Vector3) {_x, _y, _z});
 
             for (std::size_t i = 0; i < m_activeAttributeCount; i++)
             {
-                std::memcpy(m_vertexData + m_vertexDataCount, &m_activeAttributes[i].value.value.x, sizeof(Float) * m_activeAttributes[i].value.count);
-                m_vertexDataCount += m_activeAttributes[i].value.count;
+                addVertexData(&m_activeAttributes[i].value.value.x, m_activeAttributes[i].value.count);
             }
 
             m_vertexCount++;
@@ -866,6 +877,26 @@ namespace gla
 
     private:
 
+        inline void addVertexData(const Float * _data, std::size_t _count)
+        {
+            assert(m_vertexDataCount < m_vertexDataCapacity);
+            if ((int)m_vertexDataCapacity - (int)m_vertexDataCount < _count)
+            {
+                m_vertexDataCapacity = _count > m_vertexDataCapacity ? _count * 2 : m_vertexDataCapacity * 2;
+                m_vertexData = static_cast<Float *>(std::realloc(m_vertexData, m_vertexDataCapacity * sizeof(Float)));
+                //@TODO: Return error? some form of error handling? - . -
+                assert(m_vertexData);
+            }
+
+            std::memcpy(m_vertexData + m_vertexDataCount, _data, _count * sizeof(Float));
+            m_vertexDataCount += _count;
+        }
+
+        inline void addVertexData(const detail::Vector3 & _vec)
+        {
+            addVertexData(&_vec.x, 3);
+        }
+
         inline void setAttributeImpl(const char * _name, const detail::AttributeValue & _val)
         {
             bool bFound = false;
@@ -949,6 +980,7 @@ namespace gla
         BufferLayoutWithMesh m_bufferLayouts[GLANNOTATE_MAX_BUFFERLAYOUT_COUNT];
         std::size_t m_bufferLayoutCount;
         Float * m_vertexData;
+        std::size_t m_vertexDataCapacity;
         std::size_t m_vertexCount;
         std::size_t m_vertexDataCount;
         GLProgram m_currentProgram;
