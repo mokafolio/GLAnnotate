@@ -8,7 +8,7 @@ Overview
 
 In addition to that it also supports custom vertex attributes.
 
-Baisc Example
+Basic Example
 --------
 
 ```
