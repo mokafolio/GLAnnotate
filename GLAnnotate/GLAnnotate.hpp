@@ -43,7 +43,7 @@
 #define GLANNOTATE_LOCAL __attribute__ ((visibility("hidden")))
 
 #ifdef GLANNOTATE_DEBUG
-#define ASSERT_NO_GL_ERROR(_func) do { _func; \
+#define GLANNOTATE_ASSERT_NO_GL_ERROR(_func) do { _func; \
 GLenum err = glGetError(); \
 if(err != GL_NO_ERROR) \
 { \
@@ -72,7 +72,7 @@ exit(EXIT_FAILURE); \
 } \
 } while(false)
 #else
-#define ASSERT_NO_GL_ERROR(_func) _func
+#define GLANNOTATE_ASSERT_NO_GL_ERROR(_func) _func
 #endif
 
 
@@ -753,27 +753,27 @@ namespace gla
         inline void end()
         {
             auto & bufferLayout = m_bufferLayouts[m_currentProgram.bufferLayoutIndex];
-            ASSERT_NO_GL_ERROR(glBindBuffer(GL_ARRAY_BUFFER, bufferLayout.vbo));
-            ASSERT_NO_GL_ERROR(glBufferData(GL_ARRAY_BUFFER, sizeof(Float) * m_vertexDataCount, m_vertexData, GL_DYNAMIC_DRAW));
-            ASSERT_NO_GL_ERROR(glBindVertexArray(bufferLayout.vao));
-            ASSERT_NO_GL_ERROR(glUseProgram(m_currentProgram.handle));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glBindBuffer(GL_ARRAY_BUFFER, bufferLayout.vbo));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glBufferData(GL_ARRAY_BUFFER, sizeof(Float) * m_vertexDataCount, m_vertexData, GL_DYNAMIC_DRAW));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glBindVertexArray(bufferLayout.vao));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glUseProgram(m_currentProgram.handle));
 
             if (m_currentTexture)
             {
-                ASSERT_NO_GL_ERROR(glActiveTexture(GL_TEXTURE0));
-                ASSERT_NO_GL_ERROR(glBindTexture(GL_TEXTURE_2D, m_currentTexture));
-                ASSERT_NO_GL_ERROR(glUniform1i(bufferLayout.texLoc, 0));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glActiveTexture(GL_TEXTURE0));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glBindTexture(GL_TEXTURE_2D, m_currentTexture));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glUniform1i(bufferLayout.texLoc, 0));
             }
 
             if (m_tpGeneration != bufferLayout.tpGeneration)
             {
                 bufferLayout.tpGeneration = m_tpGeneration;
                 detail::Matrix4 tp = m_projection * m_transform;
-                ASSERT_NO_GL_ERROR(glUniformMatrix4fv(bufferLayout.tpLoc, 1, false, &tp.col0.x));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glUniformMatrix4fv(bufferLayout.tpLoc, 1, false, &tp.col0.x));
             }
 
-            ASSERT_NO_GL_ERROR(glDrawArrays(m_currentMode, 0, m_vertexCount));
-            ASSERT_NO_GL_ERROR(glBindVertexArray(NULL));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glDrawArrays(m_currentMode, 0, m_vertexCount));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glBindVertexArray(NULL));
 
             m_currentTexture = 0;
         }
@@ -830,30 +830,30 @@ namespace gla
 
             GLuint program = glCreateProgram();
 
-            ASSERT_NO_GL_ERROR(glAttachShader(program, vertexShader));
-            ASSERT_NO_GL_ERROR(glAttachShader(program, fragmentShader));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glAttachShader(program, vertexShader));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glAttachShader(program, fragmentShader));
 
             for (std::size_t i = 0; i < _layout.count; i++)
             {
-                ASSERT_NO_GL_ERROR(glBindAttribLocation(program, _layout.elements[i].location, _layout.elements[i].name));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glBindAttribLocation(program, _layout.elements[i].location, _layout.elements[i].name));
             }
 
-            ASSERT_NO_GL_ERROR(glLinkProgram(program));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glLinkProgram(program));
 
             //check if we had success
             GLint state;
-            ASSERT_NO_GL_ERROR(glGetProgramiv(program, GL_LINK_STATUS, &state));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glGetProgramiv(program, GL_LINK_STATUS, &state));
 
             if (state == GL_FALSE)
             {
                 GLint infologLength;
-                ASSERT_NO_GL_ERROR(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infologLength));
-                ASSERT_NO_GL_ERROR(glGetProgramInfoLog(program, std::min(infologLength, 1024), &infologLength, m_errorBuffer));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infologLength));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glGetProgramInfoLog(program, std::min(infologLength, 1024), &infologLength, m_errorBuffer));
                 success = false;
             }
 
-            ASSERT_NO_GL_ERROR(glDeleteShader(vertexShader));
-            ASSERT_NO_GL_ERROR(glDeleteShader(fragmentShader));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glDeleteShader(vertexShader));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glDeleteShader(fragmentShader));
 
             if (!success)
             {
@@ -871,7 +871,7 @@ namespace gla
         void destroyProgram(const GLProgram & _program)
         {
             if (_program.handle)
-                ASSERT_NO_GL_ERROR(glDeleteProgram(_program.handle));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glDeleteProgram(_program.handle));
         }
 
     private:
@@ -919,18 +919,18 @@ namespace gla
         {
             GLenum glHandle = glCreateShader(_shaderType);
             GLint len = (GLint)std::strlen(_shaderCode);
-            ASSERT_NO_GL_ERROR(glShaderSource(glHandle, 1, &_shaderCode, &len));
-            ASSERT_NO_GL_ERROR(glCompileShader(glHandle));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glShaderSource(glHandle, 1, &_shaderCode, &len));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glCompileShader(glHandle));
 
             //check if the shader compiled
             GLint state;
-            ASSERT_NO_GL_ERROR(glGetShaderiv(glHandle, GL_COMPILE_STATUS, &state));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glGetShaderiv(glHandle, GL_COMPILE_STATUS, &state));
             if (state == GL_FALSE)
             {
                 GLint infologLength;
-                ASSERT_NO_GL_ERROR(glGetShaderiv(glHandle, GL_INFO_LOG_LENGTH, &infologLength));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glGetShaderiv(glHandle, GL_INFO_LOG_LENGTH, &infologLength));
 
-                ASSERT_NO_GL_ERROR(glGetShaderInfoLog(glHandle, std::min(infologLength, 1024), &infologLength, m_errorBuffer));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glGetShaderInfoLog(glHandle, std::min(infologLength, 1024), &infologLength, m_errorBuffer));
                 glDeleteShader(glHandle);
                 return false;
             }
@@ -943,16 +943,16 @@ namespace gla
 
         inline bool createVAO(const BufferLayout & _layout, GLuint & _outVAO, GLuint & _outVBO)
         {
-            ASSERT_NO_GL_ERROR(glGenVertexArrays(1, &_outVAO));
-            ASSERT_NO_GL_ERROR(glGenBuffers(1, &_outVBO));
-            ASSERT_NO_GL_ERROR(glBindVertexArray(_outVAO));
-            ASSERT_NO_GL_ERROR(glBindBuffer(GL_ARRAY_BUFFER, _outVBO));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glGenVertexArrays(1, &_outVAO));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glGenBuffers(1, &_outVBO));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glBindVertexArray(_outVAO));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glBindBuffer(GL_ARRAY_BUFFER, _outVBO));
             for (std::size_t i = 0; i < _layout.count; ++i)
             {
-                ASSERT_NO_GL_ERROR(glVertexAttribPointer(_layout.elements[i].location, _layout.elements[i].elementCount, GL_FLOAT, GL_FALSE, _layout.elements[i].stride, ((char *)_layout.elements[i].offset)));
-                ASSERT_NO_GL_ERROR(glEnableVertexAttribArray(_layout.elements[i].location));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glVertexAttribPointer(_layout.elements[i].location, _layout.elements[i].elementCount, GL_FLOAT, GL_FALSE, _layout.elements[i].stride, ((char *)_layout.elements[i].offset)));
+                GLANNOTATE_ASSERT_NO_GL_ERROR(glEnableVertexAttribArray(_layout.elements[i].location));
             }
-            ASSERT_NO_GL_ERROR(glBindVertexArray(NULL));
+            GLANNOTATE_ASSERT_NO_GL_ERROR(glBindVertexArray(NULL));
 
             return true;
         }
