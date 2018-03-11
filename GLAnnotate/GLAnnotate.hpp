@@ -3,7 +3,6 @@
 
 //POSSIBLE PLATFORMS
 //@TODO: Add IOS & Android
-//@TODO: Allow to overwrite/disable the opengl header inclusion
 #define GLANNOTATE_PLATFORM_OSX 1
 #define GLANNOTATE_PLATFORM_LINUX 2
 
@@ -13,6 +12,7 @@
 #define GLANNOTATE_PLATFORM GLANNOTATE_PLATFORM_LINUX
 #endif
 
+#ifndef __gl_h_
 #if GLANNOTATE_PLATFORM == GLANNOTATE_PLATFORM_OSX
 #include <OpenGL/OpenGL.h> //for CGL functions
 //check if opengl 3+ is available
@@ -30,6 +30,7 @@
 #include <GL/glext.h>
 #undef GL_GLEXT_PROTOTYPES
 #endif
+#endif
 
 //DEBUG
 #if !defined(NDEBUG)
@@ -37,10 +38,6 @@
 #else
 #undef GLANNOTATE_DEBUG
 #endif
-
-//visibility
-#define GLANNOTATE_API  __attribute__ ((visibility("default")))
-#define GLANNOTATE_LOCAL __attribute__ ((visibility("hidden")))
 
 #ifdef GLANNOTATE_DEBUG
 #define GLANNOTATE_ASSERT_NO_GL_ERROR(_func) do { _func; \

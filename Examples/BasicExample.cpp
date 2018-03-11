@@ -1,5 +1,5 @@
-#include <GLFW/glfw3.h>
 #include <GLAnnotate/GLAnnotate.hpp>
+#include <GLFW/glfw3.h>
 
 #include <random>
 
